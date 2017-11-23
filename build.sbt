@@ -53,8 +53,7 @@ lazy val compilationSettings = scalariformSettings ++ Seq(
   version := "0.2.0-SNAPSHOT",
   organization := "com.twosigma",
   scalaVersion := "2.11.8",
-  assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
-  javacOptions ++= Seq("-source", "1.7", "-target", "1.7"),
+  javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   compileOrder in Compile := CompileOrder.JavaThenScala,
   scalacOptions ++= Seq(
     "-deprecation",
@@ -68,7 +67,7 @@ lazy val compilationSettings = scalariformSettings ++ Seq(
     "-Ywarn-numeric-widen"
   ),
   resolvers ++= Seq(
-    "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
+    "Local Maven Repository" at "file://" +Path.userHome.absolutePath +"/.m2/repository",
     "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
   ),
   headers := Map(
@@ -83,7 +82,7 @@ lazy val versions = new {
   val commons_math = "3.5"
   val joda_time = "2.9.4"
   val httpclient = "4.3.2" // Note that newer versions need to be configured differently
-  val spark = sys.props.getOrElse("spark.version", default = "2.1.0")
+  val spark = sys.props.getOrElse("spark.version", default = "2.1.1")
   val scalatest = "2.2.4"
   val scalacheck = "1.12.6"
   val grizzled_slf4j = "1.3.0"
@@ -113,6 +112,8 @@ lazy val flint = project
   .enablePlugins(AutomateHeaderPlugin)
   .settings(compilationSettings)
   .settings(dependencySettings)
+  .settings(assemblySettings)
+  .settings(assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false))
   .settings(parallelExecution in Test := false)
   .settings(testOptions in Test += Tests.Argument("-oDF"))
   .settings(apiMappings ++= DocumentationMapping.mapJarToDocURL(
@@ -129,3 +130,9 @@ lazy val flint = project
       "java" -> tsOpenSourceHeader
     )
   )
+
+ lazy val assemblySettings = Seq(
+  assemblyShadeRules in assembly := Seq(
+    ShadeRule.rename("com.fasterxml.jackson.**" -> "flint.com.fasterxml.jackson.@1").inAll
+  )
+)
